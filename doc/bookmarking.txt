@@ -5,8 +5,8 @@ BOOKMARKING                                                     *bookmarking*
 A bookmaking facility to Vim for marking points of interest.
 
 Author: David Terei
-Version: 1.0
-Last Change: Fri Mar 19 2010
+Version: 2.1
+Last Change: Wed Jul 6 2010
 
 ==============================================================================
 1. CONTENTS                                            *bookmarking-contents*
@@ -82,6 +82,10 @@ For example, put in your |vimrc|:
 
 ==============================================================================
 6. HISTORY                                              *bookmarking-history*
+
+   2.1: Wed Jul 6, 2010:
+	- Fixed bug where the script only worked for files with a '.' in
+	  their names.
 
    2.0: Wed Jul 6, 2010:
 	- Huge amount of bugs fixed, previous version was pretty broken.

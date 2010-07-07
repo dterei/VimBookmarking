@@ -2,8 +2,8 @@
 "        File: bookmarking.vim
 "      Author: David Terei <davidterei@gmail.com>
 "		    URL: 
-" Last Change: Fri Mar 19 12:36:14 EST 2010
-"     Version: 1.0
+" Last Change: Wed Jul 6 19:21:14 EST 2010
+"     Version: 2.1
 "     License: Distributed under the Vim charityware license.
 "     Summary: A bookmaking facility to Vim for marking points of interest.
 "
@@ -52,6 +52,10 @@
 "     define bookmark text=>>
 "
 " History:
+"   Wed Jul 6, 2010 - 2.1:
+"     * Fixed bug where the script only worked for files with a '.' in their
+"       names
+"
 "   Wed Jul 6, 2010 - 2.0:
 "     * Huge amount of bugs fixed, previous version was pretty broken.
 "     * Added new ClearBookmarks command, to clear all bookmarks.
@@ -161,13 +165,13 @@ function s:toggleBookmark()
 		endif
 
 		" place actual sign now
-		exe "sign place ".id." line=".cpos." name=bookmark file=".expand("%:p")
+		exe "sign place ".id." line=".cpos." name=bookmark buffer=".bufnr("%")
 		let b:endoffile = line("$")
 	else
 		" remove a bookmark
 		let b:bookmarks = newbookmarks
 		let b:bookmarkIDs = newbookmarkIDs
-		exe "sign unplace ".remove." file=".expand("%:p")
+		exe "sign unplace ".remove." buffer=".bufnr("%")
 	endif
 endfunction
 
@@ -181,7 +185,7 @@ function s:clearBookmarks()
 
 	" clear all signs
 	for bid in b:bookmarkIDs
-		exe "sign unplace ".bid." file=".expand("%:p")
+		exe "sign unplace ".bid." buffer=".bufnr("%")
 	endfor
 
 	" clear all data structures
@@ -215,7 +219,7 @@ function s:keepUpdateBooks()
 			let bpos = b:bookmarks[i]
 			if ((cpos <= bpos) && (bpos <= (cpos + dif - 1)))
 				let id = b:bookmarkIDs[i]
-				exe "sign unplace ".id." file=".expand("%:p")
+				exe "sign unplace ".id." buffer=".bufnr("%")
 			elseif (bpos >= cpos)
 				let newbookmarks = add(newbookmarks, bpos - dif)
 				let newbookmarkIDs = add(newbookmarkIDs, b:bookmarkIDs[i])
@@ -231,7 +235,7 @@ function s:keepUpdateBooks()
 endfunction
 
 " Need to bind the update function to the changes autocommand
-autocmd! CursorMoved,CursorMovedI *.* :call <SID>keepUpdateBooks()
+autocmd! CursorMoved,CursorMovedI * :call <SID>keepUpdateBooks()
 
 " jump to next (by line number) bookmark
 function s:nextBookmark()
