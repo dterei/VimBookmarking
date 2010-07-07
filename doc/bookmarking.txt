@@ -67,7 +67,7 @@ mappings to them in your |vimrc|. If a mapping is defined in your |vimrc|
 then the default mappings won't be added.
 
 You can also alter the appearance of the bookmark itself. The bookmark is
-shown on the screen using Vim's |sign| feature. To define the sign used for a
+shown on the screen using Vim's |:sign| feature. To define the sign used for a
 bookmark yourself, include a sign definition in your |vimrc| for a sign
 called 'bookmark'.
 
@@ -83,9 +83,12 @@ For example, put in your |vimrc|:
 ==============================================================================
 6. HISTORY                                              *bookmarking-history*
 
- 	1.0: Fri Mar 19, 2010:
-	
-	Initial release.
+   2.0: Wed Jul 6, 2010:
+	- Huge amount of bugs fixed, previous version was pretty broken.
+	- Added new ClearBookmarks command, to clear all bookmarks.
+
+   1.0: Fri Mar 19, 2010:
+	- Initial release.
 
 ==============================================================================
 

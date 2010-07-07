@@ -52,18 +52,12 @@
 "     define bookmark text=>>
 "
 " History:
-"   Fri Mar 19, 2010 - 0.1:
-"     * Initial release.
+"   Wed Jul 6, 2010 - 2.0:
+"     * Huge amount of bugs fixed, previous version was pretty broken.
+"     * Added new ClearBookmarks command, to clear all bookmarks.
 "
-
-" XXX: An issue with the current design is that the bookmarks cause conflicts if
-" used on lines that have Vim signs on them.
-" XXX: Also could use a 'ClearBookmarks' command but the current design only
-" allows for this to be implemented in a way that would remove all signs from
-" the current file.
-" TODO: Should convert bookmark from a list of numbers to a list of tuples
-" where each tuple contains the sign line number and the sign id. At moment
-" we just store sign line number.
+"   Fri Mar 19, 2010 - 1.0:
+"     * Initial release.
 "
 
 " Allow disabling and stop reloading
@@ -110,65 +104,136 @@ endfunc
 
 " This function creates or destroys a bookmark
 function s:toggleBookmark()
-	let cpos = line(".")
 	if (!exists("b:bookmarks"))
+		" create data structures if first run
+
+		" store bookmark locations
 		let b:bookmarks = []
+		" store bookmark ids (to map to signs), mapping from
+		" bookmarks to bookmarkIDs is done by index number
+		let b:bookmarkIDs = []
+		" unique ID generator
+		let b:nextBookmarkID = 1
 	endif
 
-	let remove = 0
+	" new data structures to copy into
 	let newbookmarks = []
-	for bpos in b:bookmarks
-		if (cpos == bpos)
-			let remove = 1
-		else
-			let newbookmarks = add(newbookmarks, bpos)
-		endif
-	endfor
+	let newbookmarkIDs = []
 
+	" bookmark id to remove if any
+	let remove = 0
+	let cpos = line(".")
+
+	" we copy since we are looping over
+	let i = 0
+	while i < len(b:bookmarks)
+		if (cpos == b:bookmarks[i])
+			let remove = b:bookmarkIDs[i]
+		else
+			let newbookmarks = add(newbookmarks, b:bookmarks[i])
+			let newbookmarkIDs = add(newbookmarkIDs, b:bookmarkIDs[i])
+		endif
+		let i = i + 1
+	endwhile
+
+	" create a bookmark
 	if (!remove)
-		let b:bookmarks = sort(add(b:bookmarks, cpos), "s:numericalCompare")
-		exe "sign place ".cpos." line=".cpos." name=bookmark file=".expand("%:p")
+		" get a new unique id
+		let id = b:nextBookmarkID
+		let b:nextBookmarkID = b:nextBookmarkID + 1
+
+		" insert into list of bookmarks and ids, we keep bookmarks in sorted
+		" order
+		let i = 0
+		while i < len(b:bookmarks)
+			if (cpos < b:bookmarks[i])
+				call insert(b:bookmarks, cpos, i)
+				call insert(b:bookmarkIDs, id, i)
+				break
+			endif
+			let i = i + 1
+		endwhile
+		
+		" if end of list and nothing bigger found
+		if (i == len(b:bookmarks))
+			let b:bookmarks = add(b:bookmarks, cpos)
+			let b:bookmarkIDs = add(b:bookmarkIDs, id)
+		endif
+
+		" place actual sign now
+		exe "sign place ".id." line=".cpos." name=bookmark file=".expand("%:p")
+		let b:endoffile = line("$")
 	else
+		" remove a bookmark
 		let b:bookmarks = newbookmarks
-		sign unplace
+		let b:bookmarkIDs = newbookmarkIDs
+		exe "sign unplace ".remove." file=".expand("%:p")
 	endif
 endfunction
 
 command ToggleBookmark :call <SID>toggleBookmark()
 
-" This function keeps the bookmarks in sync with changes to the file
-function s:keepUpdateBooks()
+" This function clears all bookmarks
+function s:clearBookmarks()
 	if (!exists("b:bookmarks") || empty(b:bookmarks))
 		return
 	endif
 
+	" clear all signs
+	for bid in b:bookmarkIDs
+		exe "sign unplace ".bid." file=".expand("%:p")
+	endfor
+
+	" clear all data structures
+	let b:bookmarks = []
+	let b:bookmarkIDs = []
+	let b:nextBookmarkID = 1
+endfunction
+
+command ClearBookmarks :call <SID>clearBookmarks()
+
+" This function keeps the bookmarks in sync with changes to the file
+function s:keepUpdateBooks()
+	if (!exists("b:bookmarks") || empty(b:bookmarks) || !exists("b:endoffile"))
+		return
+	endif
+
+	" collect change info
 	let epos = line("$")
 	let cpos = line("'.")
+	let dif = b:endoffile - epos
+	let b:endoffile = epos
 
-	if (!exists("b:endoffile"))
-		let b:endoffile = epos
-	else
-		let dif = epos - b:endoffile
-		if (dif != 0)
-			let newbookmarks = []
-			for bpos in b:bookmarks
-				if (bpos == cpos && dif == -1)
-					exe "sign unplace ".cpos." file=".expand("%:p")
-				elseif (bpos >= cpos)
-					let newbookmarks = add(newbookmarks, bpos + dif)
-				else
-					let newbookmarks = add(newbookmarks, bpos)
-				endif
-			endfor
-			let b:bookmarks = newbookmarks
-			let b:endoffile = epos
-		endif
+	" if some change, need to loop through all book marks and either leave them
+	" (if before change), delete them (if in the change) or decrease the line
+	" number (if after change)
+	if (dif != 0)
+		let newbookmarks = []
+		let newbookmarkIDs = []
+		let i = 0
+		while i < len(b:bookmarks)
+			let bpos = b:bookmarks[i]
+			if ((cpos <= bpos) && (bpos <= (cpos + dif - 1)))
+				let id = b:bookmarkIDs[i]
+				exe "sign unplace ".id." file=".expand("%:p")
+			elseif (bpos >= cpos)
+				let newbookmarks = add(newbookmarks, bpos - dif)
+				let newbookmarkIDs = add(newbookmarkIDs, b:bookmarkIDs[i])
+			else
+				let newbookmarks = add(newbookmarks, bpos)
+				let newbookmarkIDs = add(newbookmarkIDs, b:bookmarkIDs[i])
+			endif
+			let i = i + 1
+		endwhile
+		let b:bookmarks = newbookmarks
+		let b:bookmarkIDs = newbookmarkIDs
 	endif
 endfunction
 
 " Need to bind the update function to the changes autocommand
 autocmd! CursorMoved,CursorMovedI *.* :call <SID>keepUpdateBooks()
 
+" jump to next (by line number) bookmark
 function s:nextBookmark()
 	if (!exists("b:bookmarks") || empty(b:bookmarks))
 		return
@@ -193,6 +258,7 @@ endfunction
 
 command NextBookmark :call <SID>nextBookmark()
 
+" jump to previous (by line number) bookmark
 function s:previousBookmark()
 	if (!exists("b:bookmarks") || empty(b:bookmarks))
 		return
