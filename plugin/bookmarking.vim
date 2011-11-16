@@ -1,9 +1,9 @@
 " ==============================================================================
 "        File: bookmarking.vim
 "      Author: David Terei <davidterei@gmail.com>
-"		    URL: 
-" Last Change: Wed Jul 6 19:21:14 EST 2010
-"     Version: 2.1
+"         URL: https://github.com/dterei/VimBookmarking
+" Last Change: Wed Nov 16 14:52:14 EST 2010
+"     Version: 2.2
 "     License: Distributed under the Vim charityware license.
 "     Summary: A bookmaking facility to Vim for marking points of interest.
 "
@@ -42,6 +42,11 @@
 " bookmark yourself, include a sign definition in your .vimrc for a sign
 " called 'bookmark'.
 "
+" Finally you can control if a menu item is created for the bookmarking plugin
+" using the 'g:bookmarking_menu' global variable. Setting this to 1 will mean
+" the menu is created, which is the default. Setting it to 0 will mean the
+" menu isn't created.
+"
 " Examples:
 " In your .vimrc:
 "
@@ -49,9 +54,14 @@
 "     map <silent> bn :NextBookmark<CR>
 "     map <silent> bp :PreviousBookmark<CR>
 "
+"     let g:bookmarking_menu = 1
+"
 "     define bookmark text=>>
 "
 " History:
+"   Wed Nov 16, 2011 - 2.2:
+"     * Add 'g:bookmarking_menu' global to control if menu is created
+"
 "   Wed Jul 6, 2010 - 2.1:
 "     * Fixed bug where the script only worked for files with a '.' in their
 "       names
@@ -66,7 +76,7 @@
 
 " Allow disabling and stop reloading
 if exists("loaded_bookmarks")
-  finish
+	finish
 endif
 let loaded_bookmarks = 1
 
@@ -97,9 +107,11 @@ if !hasmapto(':PreviousBookmark')
 endif
 
 " Menu mapping
-noremenu <script> Plugin.Bookmark\ Toggle   s:toggleBookmark
-noremenu <script> Plugin.Bookmark\ Next     s:nextBookmark
-noremenu <script> Plugin.Bookmark\ Previous s:previousBookmark
+if (!exists('g:bookmarking_menu') || g:bookmarking_menu == 1)
+	noremenu <script> Plugin.Bookmark\ Toggle   s:toggleBookmark
+	noremenu <script> Plugin.Bookmark\ Next     s:nextBookmark
+	noremenu <script> Plugin.Bookmark\ Previous s:previousBookmark
+endif
 
 " Numeric sort comparator
 function s:numericalCompare(i1, i2)
@@ -157,7 +169,7 @@ function s:toggleBookmark()
 			endif
 			let i = i + 1
 		endwhile
-		
+
 		" if end of list and nothing bigger found
 		if (i == len(b:bookmarks))
 			let b:bookmarks = add(b:bookmarks, cpos)
