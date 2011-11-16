@@ -5,8 +5,8 @@ BOOKMARKING                                                     *bookmarking*
 A bookmaking facility to Vim for marking points of interest.
 
 Author: David Terei
-Version: 2.1
-Last Change: Wed Jul 6 2010
+Version: 2.2
+Last Change: Wed Nov 16 2011
 
 ==============================================================================
 1. CONTENTS                                            *bookmarking-contents*
@@ -18,8 +18,9 @@ Last Change: Wed Jul 6 2010
        4.1 ToggleBookmark........................: |ToggleBookmark|
        4.1 NextBookmark..........................: |NextBookmark|
        4.1 PreviousBookmark......................: |PreviousBookmark|
-    5. Settings..................................: |bookmarking-settings|
-    6. History...................................: |bookmarking-history|
+    5. Globals...................................: |bookmarking-globals|
+    6. Settings..................................: |bookmarking-settings|
+    7. History...................................: |bookmarking-history|
 
 ==============================================================================
 2. DESCRIPTION                                      *bookmarking-description*
@@ -60,7 +61,15 @@ Bookmark provides the following new commands for Vim:
 	location.
 
 ==============================================================================
-5. SETTINGS                                            *bookmarking-settings*
+5. GLOBALS                                              *bookmarking-globals*
+
+5.1 g:bookmarking_menu                                   *g:bookmarking_menu*
+	Control if the menu items for bookmarking are created or not. Setting
+	this to 0 means they aren't. A value of 1 or no value (default) means
+	they are created.
+
+==============================================================================
+6. SETTINGS                                            *bookmarking-settings*
 
 The keyboard mapping of the commands can be easily changed by adding new
 mappings to them in your |vimrc|. If a mapping is defined in your |vimrc|
@@ -71,17 +80,27 @@ shown on the screen using Vim's |:sign| feature. To define the sign used for a
 bookmark yourself, include a sign definition in your |vimrc| for a sign
 called 'bookmark'.
 
+Finally you can control if a menu item is created for the bookmarking plugin
+using the |g:bookmarking_menu| global variable. Setting this to 1 will mean
+the menu is created, which is the default. Setting it to 0 will mean the
+menu isn't created.
+
 For example, put in your |vimrc|:
 >
     map <silent> bb :ToggleBookmark<CR>
     map <silent> bn :NextBookmark<CR>
     map <silent> bp :PreviousBookmark<CR>
 
+    let g:bookmarking_menu = 1
+
     define bookmark text=>>
 <
 
 ==============================================================================
-6. HISTORY                                              *bookmarking-history*
+7. HISTORY                                              *bookmarking-history*
+
+   2.2  Wed Nov 16, 2011 - 2.2:
+	- Add |g:bookmarking_menu| global to control if menu is created
 
    2.1: Wed Jul 6, 2010:
 	- Fixed bug where the script only worked for files with a '.' in

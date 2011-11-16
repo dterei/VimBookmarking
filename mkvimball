@@ -1,0 +1,18 @@
+==============================================================================
+3. Vimball Manual					*vimball-manual*
+
+MAKING A VIMBALL						*:MkVimball*
+		:[range]MkVimball[!] filename [path]
+
+	The range is composed of lines holding paths to files to be included
+	in your new vimball, omitting the portion of the paths that is
+	normally specified by the runtimepath (|'rtp'|).  As an example: >
+		plugin/something.vim
+		doc/something.txt
+<	using >
+		:[range]MkVimball filename
+
+
+/home/davidt/VimBookmarking/doc/bookmarking.txt
+/home/davidt/VimBookmarking/plugin/bookmarking.vim
+
