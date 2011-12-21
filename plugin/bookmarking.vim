@@ -2,8 +2,8 @@
 "        File: bookmarking.vim
 "      Author: David Terei <davidterei@gmail.com>
 "         URL: https://github.com/dterei/VimBookmarking
-" Last Change: Wed Nov 16 14:52:14 EST 2010
-"     Version: 2.2
+" Last Change: Wed Dec 21 11:52:14 PST 2010
+"     Version: 2.3
 "     License: Distributed under the Vim charityware license.
 "     Summary: A bookmaking facility to Vim for marking points of interest.
 "
@@ -59,6 +59,9 @@
 "     define bookmark text=>>
 "
 " History:
+"   Wed Dec 21, 2011 - 2.3:
+"     * Fix bookmarking to work even if signs feature not enabled
+"
 "   Wed Nov 16, 2011 - 2.2:
 "     * Add 'g:bookmarking_menu' global to control if menu is created
 "
@@ -84,14 +87,16 @@ let loaded_bookmarks = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-" The sign to use for the bookmark
-try
-	" Don't define if already defined by user
-	sign list bookmark
-catch
-	" default sign
-	sign define bookmark text=>>
-endtry
+if has("signs")
+	" The sign to use for the bookmark
+	try
+		" Don't define if already defined by user
+		sign list bookmark
+	catch
+		" default sign
+		sign define bookmark text=>>
+	endtry
+endif
 
 " Key Mappings
 if !hasmapto(':ToggleBookmark')
@@ -177,13 +182,17 @@ function s:toggleBookmark()
 		endif
 
 		" place actual sign now
-		exe "sign place ".id." line=".cpos." name=bookmark buffer=".bufnr("%")
+		if has("signs")
+			exe "sign place ".id." line=".cpos." name=bookmark buffer=".bufnr("%")
+		endif
 		let b:endoffile = line("$")
 	else
 		" remove a bookmark
 		let b:bookmarks = newbookmarks
 		let b:bookmarkIDs = newbookmarkIDs
-		exe "sign unplace ".remove." buffer=".bufnr("%")
+		if has("signs")
+			exe "sign unplace ".remove." buffer=".bufnr("%")
+		endif
 	endif
 endfunction
 
@@ -196,9 +205,11 @@ function s:clearBookmarks()
 	endif
 
 	" clear all signs
-	for bid in b:bookmarkIDs
-		exe "sign unplace ".bid." buffer=".bufnr("%")
-	endfor
+	if has("signs")
+		for bid in b:bookmarkIDs
+			exe "sign unplace ".bid." buffer=".bufnr("%")
+		endfor
+	endif
 
 	" clear all data structures
 	let b:bookmarks = []
@@ -231,7 +242,9 @@ function s:keepUpdateBooks()
 			let bpos = b:bookmarks[i]
 			if ((cpos <= bpos) && (bpos <= (cpos + dif - 1)))
 				let id = b:bookmarkIDs[i]
-				exe "sign unplace ".id." buffer=".bufnr("%")
+				if has("signs")
+					exe "sign unplace ".id." buffer=".bufnr("%")
+				endif
 			elseif (bpos >= cpos)
 				let newbookmarks = add(newbookmarks, bpos - dif)
 				let newbookmarkIDs = add(newbookmarkIDs, b:bookmarkIDs[i])
