@@ -5,8 +5,8 @@ BOOKMARKING                                                     *bookmarking*
 A bookmaking facility to Vim for marking points of interest.
 
 Author: David Terei
-Version: 2.2
-Last Change: Wed Nov 16 2011
+Version: 2.3
+Last Change: Wed Dec 21 2011
 
 ==============================================================================
 1. CONTENTS                                            *bookmarking-contents*
@@ -99,7 +99,10 @@ For example, put in your |vimrc|:
 ==============================================================================
 7. HISTORY                                              *bookmarking-history*
 
-   2.2  Wed Nov 16, 2011 - 2.2:
+   2.3  Wed Dec 21, 2011:
+	- Fix bookmarking to work even if signs feature not enabled
+
+   2.2  Wed Nov 16, 2011:
 	- Add |g:bookmarking_menu| global to control if menu is created
 
    2.1: Wed Jul 6, 2010:
