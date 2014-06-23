@@ -259,8 +259,11 @@ function s:keepUpdateBooks()
 	endif
 endfunction
 
-" Need to bind the update function to the changes autocommand
-autocmd! CursorMoved,CursorMovedI * :call <SID>keepUpdateBooks()
+augroup VimBookmarking
+    autocmd!
+    " Need to bind the update function to the changes autocommand
+    autocmd CursorMoved,CursorMovedI * :call <SID>keepUpdateBooks()
+augroup END
 
 " jump to next (by line number) bookmark
 function s:nextBookmark()
